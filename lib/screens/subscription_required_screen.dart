@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SubscriptionRequiredScreen extends StatelessWidget {
-  const SubscriptionRequiredScreen({Key? key}) : super(key: key);
+  const SubscriptionRequiredScreen({super.key});
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);

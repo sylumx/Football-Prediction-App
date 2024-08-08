@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'prediction_analytics_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);

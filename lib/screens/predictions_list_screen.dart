@@ -6,7 +6,7 @@ import 'prediction_details_screen.dart';
 import '../widgets/user_menu.dart';
 
 class PredictionsListScreen extends StatefulWidget {
-  const PredictionsListScreen({Key? key}) : super(key: key);
+  const PredictionsListScreen({super.key});
 
   @override
   _PredictionsListScreenState createState() => _PredictionsListScreenState();

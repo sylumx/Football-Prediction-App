@@ -4,7 +4,7 @@ import '../providers/auth_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class PredictionAnalyticsScreen extends StatelessWidget {
-  const PredictionAnalyticsScreen({Key? key}) : super(key: key);
+  const PredictionAnalyticsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
