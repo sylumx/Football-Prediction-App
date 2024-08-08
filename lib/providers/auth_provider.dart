@@ -11,6 +11,29 @@ class AuthProvider with ChangeNotifier {
   Map<String, dynamic>? get userData => _userData;
   String get errorMessage => _errorMessage;
 
+  bool get isSubscriptionActive {
+    return _userData?['subscription_status'] == 'active';
+  }
+
+    Future<void> checkLoginStatus() async {
+    try {
+      final result = await _authService.getUserInfo();
+      if (result['success']) {
+        _isLoggedIn = true;
+        _userData = result['data'];
+      } else {
+        _isLoggedIn = false;
+        _userData = null;
+        _errorMessage = result['message'] ?? 'Failed to get user info';
+      }
+    } catch (e) {
+      _isLoggedIn = false;
+      _userData = null;
+      _errorMessage = 'An error occurred: $e';
+    }
+    notifyListeners();
+  }
+
   AuthProvider() {
     _checkLoginStatus();
   }
@@ -59,6 +82,22 @@ class AuthProvider with ChangeNotifier {
       _userData = null;
     }
     notifyListeners();
+  }
+
+  Future<void> checkSubscriptionStatus() async {
+    try {
+      final userInfo = await _authService.getUserInfo();
+      if (userInfo['success']) {
+        _userData = userInfo['data'];
+        notifyListeners();
+      } else {
+        _errorMessage = 'Failed to fetch user information';
+        notifyListeners();
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while checking subscription status';
+      notifyListeners();
+    }
   }
 
   Future<bool> logout() async {

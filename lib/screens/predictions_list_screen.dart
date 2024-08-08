@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart'; // Add this import
+import '../providers/auth_provider.dart';
 import '../services/predictions_service.dart';
 import '../models/prediction.dart';
 import 'prediction_details_screen.dart';
 import '../widgets/user_menu.dart';
+import 'subscription_required_screen.dart';
 
 class PredictionsListScreen extends StatefulWidget {
-  const PredictionsListScreen({super.key});
+  const PredictionsListScreen({Key? key}) : super(key: key);
 
   @override
   _PredictionsListScreenState createState() => _PredictionsListScreenState();
@@ -21,7 +24,26 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
   @override
   void initState() {
     super.initState();
-    fetchPredictions();
+    _checkSubscriptionAndFetchPredictions();
+  }
+
+  Future<void> _checkSubscriptionAndFetchPredictions() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.checkSubscriptionStatus();
+
+    if (authProvider.isSubscriptionActive) {
+      fetchPredictions();
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      // Navigate to subscription required screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SubscriptionRequiredScreen()),
+        );
+      });
+    }
   }
 
   Future<void> fetchPredictions() async {
@@ -77,9 +99,9 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
           : _errorMessage != null
               ? Center(child: Text(_errorMessage!))
               : RefreshIndicator(
-                  onRefresh: fetchPredictions,
+                  onRefresh: _checkSubscriptionAndFetchPredictions,
                   child: predictionsByDate.isEmpty
-                      ? const Center(child: Text('No predictions available'))
+                      ? _buildNoPredictionsContent()
                       : ListView.builder(
                           itemCount: predictionsByDate.length,
                           itemBuilder: (context, index) {
@@ -91,6 +113,120 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
                           },
                         ),
                 ),
+    );
+  }
+
+  Widget _buildNoPredictionsContent() {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Icon(
+              Icons.sports_soccer,
+              size: 100,
+              color: Colors.indigo,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'No Predictions Available Yet',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Our expert analysts are hard at work crafting premium predictions just for you. Stay tuned for high-quality betting tips that will give you the edge!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 30),
+            _buildSubscriptionPromotion(),
+            const SizedBox(height: 30),
+            _buildFeaturesList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionPromotion() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text(
+              'Unlock Premium Predictions',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Get access to exclusive betting tips and increase your chances of winning!',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to subscription page or show subscription options
+                Navigator.pushNamed(context, '/subscription');
+              },
+              child: const Text('Subscribe Now'),
+              style: ElevatedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturesList() {
+    final features = [
+      'Daily premium predictions',
+      'Expert analysis from seasoned professionals',
+      'Comprehensive stats and insights',
+      'Exclusive access to VIP tips',
+      'Personalized betting strategies',
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Why Subscribe?',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.indigo,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...features.map((feature) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(feature)),
+                ],
+              ),
+            )),
+      ],
     );
   }
 

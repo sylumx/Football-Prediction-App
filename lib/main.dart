@@ -6,6 +6,8 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/prediction_analytics_screen.dart';
+import 'screens/subscription_required_screen.dart';
+import 'screens/splash_screen.dart'; // Import the splash screen
 
 void main() {
   runApp(
@@ -19,7 +21,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,19 +77,39 @@ class MyApp extends StatelessWidget {
           onSecondary: Colors.white,
         ),
       ),
-      home: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
-          return authProvider.isLoggedIn
-              ? const PredictionsListScreen()
-              : const LoginScreen();
-        },
-      ),
-      routes: {
-        '/predictions': (context) => const PredictionsListScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/prediction_analytics': (context) => const PredictionAnalyticsScreen(),
+      home: const SplashScreen(), // Set the splash screen as the initial route
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/home':
+            return MaterialPageRoute(
+                builder: (context) => Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return authProvider.isLoggedIn
+                            ? const PredictionsListScreen()
+                            : const LoginScreen();
+                      },
+                    ));
+          case '/predictions':
+            return MaterialPageRoute(
+                builder: (context) => const PredictionsListScreen());
+          case '/login':
+            return MaterialPageRoute(builder: (context) => const LoginScreen());
+          case '/register':
+            return MaterialPageRoute(
+                builder: (context) => const RegisterScreen());
+          case '/profile':
+            return MaterialPageRoute(
+                builder: (context) => const ProfileScreen());
+          case '/prediction_analytics':
+            return MaterialPageRoute(
+                builder: (context) => const PredictionAnalyticsScreen());
+          case '/subscription_required':
+            return MaterialPageRoute(
+                builder: (context) => const SubscriptionRequiredScreen());
+          default:
+            return MaterialPageRoute(
+                builder: (context) => const SplashScreen()); // Fallback route
+        }
       },
     );
   }
