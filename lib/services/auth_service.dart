@@ -16,7 +16,6 @@ class AuthService {
 
 Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      print('Attempting login for email: $email');
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {
@@ -29,13 +28,8 @@ Future<Map<String, dynamic>> login(String email, String password) async {
         }),
       );
 
-      print('Raw response: ${response.toString()}');
-      print('Response headers: ${response.headers}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
-        print('Decoded response body: $responseBody');
         if (responseBody['token'] != null) {
           await _setToken(responseBody['token']);
           return {'success': true, 'data': responseBody};
@@ -46,7 +40,6 @@ Future<Map<String, dynamic>> login(String email, String password) async {
         return {'success': false, 'message': 'Login failed: ${response.body}'};
       }
     } catch (e) {
-      print('Login error: ${e.toString()}');
       return {'success': false, 'message': 'Login error: ${e.toString()}'};
     }
   }

@@ -39,9 +39,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
-    debugPrint('AuthProvider: Attempting login');
     final result = await _authService.login(email, password);
-    debugPrint('AuthProvider: Login result: $result');
     if (result['success']) {
       _isLoggedIn = true;
       _userData = result['data'];

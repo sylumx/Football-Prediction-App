@@ -1,5 +1,5 @@
-name: untitled
-description: "A new Flutter project."
+name: FootballPredictions.Site
+description: "Gain access to exclusive, high-accuracy predictions and increase your chances of winning."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -51,6 +51,9 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon/app_icon.png"
+  android_icon_name: "ic_launcher"
+  ios_icon_name: "AppIcon"
+  app_name: "Football Predictions"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
