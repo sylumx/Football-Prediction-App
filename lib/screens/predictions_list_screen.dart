@@ -25,20 +25,35 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
   @override
   void initState() {
     super.initState();
-    _checkSubscriptionAndFetchPredictions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _checkSubscriptionAndFetchPredictions();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Cancel any ongoing operations here if necessary
+    super.dispose();
   }
 
   Future<void> _checkSubscriptionAndFetchPredictions() async {
+    if (!mounted) return;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.checkSubscriptionStatus();
 
+    if (!mounted) return;
+
     if (authProvider.isSubscriptionActive) {
-      fetchPredictions();
+      await fetchPredictions();
     } else {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SubscriptionRequiredScreen()),
         );
@@ -47,6 +62,7 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
   }
 
   Future<void> fetchPredictions() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -54,6 +70,7 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
 
     try {
       final data = await _service.fetchPredictions();
+      if (!mounted) return;
       if (data != null) {
         setState(() {
           predictionsByDate = _groupPredictionsByDate(data);
@@ -66,6 +83,7 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred: $e';
         _isLoading = false;

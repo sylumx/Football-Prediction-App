@@ -31,7 +31,8 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoTile('Name', userData['name']),
+                _buildProfileHeader(userData['name'] ?? 'User'),
+                const SizedBox(height: 24),
                 _buildInfoTile('Email', userData['email']),
                 _buildInfoTile('Phone', userData['phone_number']),
                 _buildInfoTile('Country', userData['country_name']),
@@ -42,6 +43,7 @@ class ProfileScreen extends StatelessWidget {
                 _buildButton(
                   context,
                   'View Prediction Analytics',
+                  Icons.bar_chart,
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -52,31 +54,44 @@ class ProfileScreen extends StatelessWidget {
                 _buildButton(
                   context,
                   'Change Password',
+                  Icons.lock,
                   () => _launchURL('https://footballprediction.site/login'),
                 ),
                 _buildButton(
                   context,
                   'Subscription Plans',
+                  Icons.credit_card,
                   () => _launchURL(
                       'https://footballprediction.site/subscription/plans'),
                 ),
                 const SizedBox(height: 24),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      authProvider.logout();
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Logout'),
-                  ),
-                ),
+                _buildLogoutButton(context, authProvider),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(String name) {
+    return Center(
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.blue.shade100,
+            child: Text(
+              name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'U',
+              style: TextStyle(fontSize: 36, color: Colors.blue.shade700),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            name,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
@@ -98,9 +113,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value ?? 'N/A',
-            style: const TextStyle(
-              fontSize: 18,
-            ),
+            style: const TextStyle(fontSize: 18),
           ),
           const Divider(),
         ],
@@ -108,15 +121,33 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildButton(
-      BuildContext context, String label, VoidCallback onPressed) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: ElevatedButton(
-          onPressed: onPressed,
-          child: Text(label),
+  Widget _buildButton(BuildContext context, String label, IconData icon,
+      VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, AuthProvider authProvider) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          authProvider.logout();
+          Navigator.pushReplacementNamed(context, '/login');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          minimumSize: const Size(200, 50),
+        ),
+        child: const Text('Logout'),
       ),
     );
   }

@@ -64,11 +64,9 @@ class AuthProvider with ChangeNotifier {
     final result = await _authService.register(
         name, email, password, phoneNumber, countryCode, countryName);
     if (result['success']) {
-      _isLoggedIn = true;
       _userData = result['data'];
       _errorMessage = '';
     } else {
-      _isLoggedIn = false;
       _userData = null;
       _errorMessage = result['message'];
     }

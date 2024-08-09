@@ -11,6 +11,7 @@ class PredictionAnalyticsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prediction Analytics'),
+        elevation: 0,
       ),
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
@@ -19,25 +20,20 @@ class PredictionAnalyticsScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Overall Performance',
-                    style: Theme.of(context).textTheme.titleLarge),
+                _buildSectionHeader(context, 'Overall Performance'),
                 _buildPerformanceCard(userData['overall_performance']),
-                const SizedBox(height: 24),
-                Text('Daily Performance (ROI)',
-                    style: Theme.of(context).textTheme.titleLarge),
-                _buildDailyPerformanceChart(userData['daily_performance']),
-                const SizedBox(height: 24),
-                Text('League Performance',
-                    style: Theme.of(context).textTheme.titleLarge),
-                _buildLeaguePerformanceList(userData['league_performance']),
-                const SizedBox(height: 24),
-                Text('Bet Type Performance',
-                    style: Theme.of(context).textTheme.titleLarge),
-                _buildBetTypePerformanceList(userData['bet_type_performance']),
+                _buildSectionHeader(context, 'Daily Performance (ROI)'),
+                _buildDailyPerformanceChart(
+                    context, userData['daily_performance']),
+                _buildSectionHeader(context, 'League Performance'),
+                _buildLeaguePerformanceList(
+                    context, userData['league_performance']),
+                _buildSectionHeader(context, 'Bet Type Performance'),
+                _buildBetTypePerformanceList(
+                    context, userData['bet_type_performance']),
               ],
             ),
           );
@@ -46,43 +42,124 @@ class PredictionAnalyticsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+      ),
+    );
+  }
+
   Widget _buildPerformanceCard(Map<String, dynamic>? performance) {
     if (performance == null) return Container();
     return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Games: ${performance['total_games']}'),
-            Text('Winning Predictions: ${performance['winning_predictions']}'),
-            Text('Losing Predictions: ${performance['losing_predictions']}'),
-            Text('Pending Predictions: ${performance['pending_predictions']}'),
-            Text('Win Rate: ${performance['win_rate']}%'),
-            Text('Hit Rate: ${performance['hit_rate']}%'),
-            Text('Total Stake: \$${performance['total_stake']}'),
-            Text('Total Profit/Loss: \$${performance['total_profit_loss']}'),
-            Text('ROI: ${performance['roi']}%'),
-            Text('Average Odds: ${performance['average_odds']}'),
+            _buildPerformanceRow(
+                'Total Games', performance['total_games'].toString()),
+            _buildPerformanceRow('Winning Predictions',
+                performance['winning_predictions'].toString()),
+            _buildPerformanceRow('Losing Predictions',
+                performance['losing_predictions'].toString()),
+            _buildPerformanceRow('Pending Predictions',
+                performance['pending_predictions'].toString()),
+            _buildPerformanceRow('Win Rate', '${performance['win_rate']}%'),
+            _buildPerformanceRow('Hit Rate', '${performance['hit_rate']}%'),
+            _buildPerformanceRow(
+                'Total Stake', '\$${performance['total_stake']}'),
+            _buildPerformanceRow(
+                'Total Profit/Loss', '\$${performance['total_profit_loss']}'),
+            _buildPerformanceRow('ROI', '${performance['roi']}%'),
+            _buildPerformanceRow(
+                'Average Odds', performance['average_odds'].toString()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDailyPerformanceChart(List<dynamic>? dailyPerformance) {
+  Widget _buildPerformanceRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey[600])),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyPerformanceChart(
+      BuildContext context, List<dynamic>? dailyPerformance) {
     if (dailyPerformance == null) return Container();
     List<FlSpot> spots = dailyPerformance.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value['roi'].toDouble());
     }).toList();
 
-    return SizedBox(
-      height: 200,
+    return Container(
+      height: 250,
+      padding: const EdgeInsets.all(16),
       child: LineChart(
         LineChartData(
-          gridData: const FlGridData(show: false),
-          titlesData: const FlTitlesData(show: false),
-          borderData: FlBorderData(show: true),
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: true,
+            getDrawingHorizontalLine: (value) {
+              return FlLine(
+                color: Colors.grey[300],
+                strokeWidth: 1,
+              );
+            },
+            getDrawingVerticalLine: (value) {
+              return FlLine(
+                color: Colors.grey[300],
+                strokeWidth: 1,
+              );
+            },
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 22,
+                getTitlesWidget: (value, meta) {
+                  if (value % 5 == 0) {
+                    return Text(value.toInt().toString());
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) {
+                  return Text('${value.toInt()}%');
+                },
+              ),
+            ),
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(
+              show: true, border: Border.all(color: Colors.grey[300]!)),
           minX: 0,
           maxX: dailyPerformance.length.toDouble() - 1,
           minY: spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b),
@@ -91,11 +168,14 @@ class PredictionAnalyticsScreen extends StatelessWidget {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: Colors.blue,
-              barWidth: 2,
+              color: Theme.of(context).primaryColor,
+              barWidth: 3,
               isStrokeCapRound: true,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(show: false),
+              dotData: FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+              ),
             ),
           ],
         ),
@@ -103,31 +183,47 @@ class PredictionAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLeaguePerformanceList(List<dynamic>? leaguePerformance) {
-    if (leaguePerformance == null) return Container();
-    return Column(
-      children: leaguePerformance.map((league) {
-        return ListTile(
-          title: Text(league['league_name']),
-          subtitle: Text(
-              'Win Rate: ${league['win_rate'].toStringAsFixed(2)}%, ROI: ${league['roi'].toStringAsFixed(2)}%'),
-          trailing: Text('Predictions: ${league['total_predictions']}'),
+  Widget _buildPerformanceList(BuildContext context,
+      List<dynamic>? performanceData, String nameKey, String totalKey) {
+    if (performanceData == null) return Container();
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: performanceData.length,
+      itemBuilder: (context, index) {
+        final item = performanceData[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            title: Text(item[nameKey],
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              'Win Rate: ${item['win_rate'].toStringAsFixed(2)}%, ROI: ${item['roi'].toStringAsFixed(2)}%',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            trailing: Text(
+              'Predictions: ${item[totalKey]}',
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
         );
-      }).toList(),
+      },
     );
   }
 
-  Widget _buildBetTypePerformanceList(List<dynamic>? betTypePerformance) {
-    if (betTypePerformance == null) return Container();
-    return Column(
-      children: betTypePerformance.map((betType) {
-        return ListTile(
-          title: Text(betType['bet_type']),
-          subtitle: Text(
-              'Win Rate: ${betType['win_rate'].toStringAsFixed(2)}%, ROI: ${betType['roi'].toStringAsFixed(2)}%'),
-          trailing: Text('Predictions: ${betType['total_predictions']}'),
-        );
-      }).toList(),
-    );
+  Widget _buildLeaguePerformanceList(
+      BuildContext context, List<dynamic>? leaguePerformance) {
+    return _buildPerformanceList(
+        context, leaguePerformance, 'league_name', 'total_predictions');
+  }
+
+  Widget _buildBetTypePerformanceList(
+      BuildContext context, List<dynamic>? betTypePerformance) {
+    return _buildPerformanceList(
+        context, betTypePerformance, 'bet_type', 'total_predictions');
   }
 }

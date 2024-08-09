@@ -72,12 +72,7 @@ Future<Map<String, dynamic>> login(String email, String password) async {
 
       if (response.statusCode == 201) {
         final responseBody = jsonDecode(response.body);
-        if (responseBody['token'] != null) {
-          await _setToken(responseBody['token']);
-          return {'success': true, 'data': responseBody};
-        } else {
-          return {'success': false, 'message': 'No token received'};
-        }
+        return {'success': true, 'data': responseBody};
       } else {
         return {
           'success': false,
