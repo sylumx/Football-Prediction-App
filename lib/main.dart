@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/timezone_provider.dart';
 import 'screens/predictions_list_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/prediction_analytics_screen.dart';
 import 'screens/subscription_required_screen.dart';
-import 'screens/splash_screen.dart'; // Import the splash screen
+import 'screens/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => TimezoneProvider()),
       ],
       child: const MyApp(),
     ),
@@ -77,7 +80,7 @@ class MyApp extends StatelessWidget {
           onSecondary: Colors.white,
         ),
       ),
-      home: const SplashScreen(), // Set the splash screen as the initial route
+      home: const SplashScreen(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/home':
@@ -108,7 +111,7 @@ class MyApp extends StatelessWidget {
                 builder: (context) => const SubscriptionRequiredScreen());
           default:
             return MaterialPageRoute(
-                builder: (context) => const SplashScreen()); // Fallback route
+                builder: (context) => const SplashScreen());
         }
       },
     );

@@ -1,5 +1,7 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'timezone_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -15,12 +17,20 @@ class AuthProvider with ChangeNotifier {
     return _userData?['subscription_status'] == 'active';
   }
 
-    Future<void> checkLoginStatus() async {
+  AuthProvider() {
+    _checkLoginStatus();
+  }
+
+  Future<void> checkLoginStatus(BuildContext context) async {
     try {
       final result = await _authService.getUserInfo();
       if (result['success']) {
         _isLoggedIn = true;
         _userData = result['data'];
+        if (_userData != null && _userData!['timezone'] != null) {
+          Provider.of<TimezoneProvider>(context, listen: false)
+              .setUserTimeZone(_userData!['timezone']);
+        }
       } else {
         _isLoggedIn = false;
         _userData = null;
@@ -32,10 +42,6 @@ class AuthProvider with ChangeNotifier {
       _errorMessage = 'An error occurred: $e';
     }
     notifyListeners();
-  }
-
-  AuthProvider() {
-    _checkLoginStatus();
   }
 
   Future<bool> login(String email, String password) async {
@@ -111,7 +117,7 @@ class AuthProvider with ChangeNotifier {
     return result['success'];
   }
 
-  Future<void> refreshUserData() async {
-    await _checkLoginStatus();
+  Future<void> refreshUserData(BuildContext context) async {
+    await checkLoginStatus(context);
   }
 }

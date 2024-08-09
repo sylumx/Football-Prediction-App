@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; // Add this import
+import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
+import '../providers/timezone_provider.dart';
 import '../services/predictions_service.dart';
 import '../models/prediction.dart';
 import 'prediction_details_screen.dart';
@@ -37,7 +38,6 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
       setState(() {
         _isLoading = false;
       });
-      // Navigate to subscription required screen
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SubscriptionRequiredScreen()),
@@ -180,7 +180,6 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to subscription page or show subscription options
                 Navigator.pushNamed(context, '/subscription');
               },
               child: const Text('Subscribe Now'),
@@ -263,6 +262,10 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
   }
 
   Widget _buildPredictionCard(Prediction prediction) {
+    final timezoneProvider =
+        Provider.of<TimezoneProvider>(context, listen: false);
+    final localTime = timezoneProvider.convertToLocalTime(prediction.date);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
@@ -290,7 +293,7 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
                     ),
                   ),
                   Text(
-                    _formatTime(prediction.date),
+                    _formatTime(localTime),
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -348,8 +351,7 @@ class _PredictionsListScreenState extends State<PredictionsListScreen> {
     return DateFormat('EEEE, MMMM d, y').format(date);
   }
 
-  String _formatTime(DateTime? date) {
-    if (date == null) return 'N/A';
+  String _formatTime(DateTime date) {
     return DateFormat('HH:mm').format(date);
   }
 }

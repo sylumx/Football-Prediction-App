@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../providers/timezone_provider.dart';
 import '../models/prediction.dart';
 
 class PredictionDetailsScreen extends StatelessWidget {
   final Prediction prediction;
 
-  const PredictionDetailsScreen({super.key, required this.prediction});
+  const PredictionDetailsScreen({Key? key, required this.prediction}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final timezoneProvider = Provider.of<TimezoneProvider>(context, listen: false);
+    final localKickOffTime = timezoneProvider.convertToLocalTime(prediction.date);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prediction Details'),
@@ -17,15 +22,15 @@ class PredictionDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildHeader(),
-            _buildDetailsCard(),
+            _buildHeader(localKickOffTime),
+            _buildDetailsCard(context, localKickOffTime),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(DateTime localKickOffTime) {
     return Container(
       color: Colors.indigo[50],
       padding: const EdgeInsets.all(16),
@@ -41,7 +46,7 @@ class PredictionDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            _formatDate(prediction.date),
+            _formatDateTime(localKickOffTime),
             style: TextStyle(fontSize: 16, color: Colors.indigo[600]),
           ),
         ],
@@ -49,7 +54,9 @@ class PredictionDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsCard() {
+  Widget _buildDetailsCard(BuildContext context, DateTime localKickOffTime) {
+    final timezoneProvider = Provider.of<TimezoneProvider>(context, listen: false);
+    
     return Card(
       margin: const EdgeInsets.all(16),
       elevation: 4,
@@ -73,6 +80,8 @@ class PredictionDetailsScreen extends StatelessWidget {
                 prediction.predictedHomeScore?.toStringAsFixed(2) ?? 'N/A'),
             _buildDetailRow('Predicted Away Score',
                 prediction.predictedAwayScore?.toStringAsFixed(2) ?? 'N/A'),
+            _buildDetailRow('Local Kickoff Time', _formatTime(localKickOffTime)),
+            _buildDetailRow('Time Zone', timezoneProvider.userTimeZone),
           ],
         ),
       ),
@@ -101,13 +110,17 @@ class PredictionDetailsScreen extends StatelessWidget {
               value,
               style: const TextStyle(fontSize: 16, color: Colors.black87),
             ),
-          ),
+            ),
         ],
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDateTime(DateTime date) {
     return DateFormat('EEEE, MMMM d, y HH:mm').format(date);
+  }
+
+  String _formatTime(DateTime date) {
+    return DateFormat('HH:mm').format(date);
   }
 }
